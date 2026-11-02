@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
+const mongoose = require('mongoose'); // <-- Added mongoose
 
 const authRoutes = require('./routes/auth');
 const projectRoutes = require('./routes/projects');
@@ -9,7 +10,7 @@ const settingsRoutes = require('./routes/settings');
 const uploadRoutes = require('./routes/upload');
 
 // Fail loudly if required secrets are missing instead of running insecurely.
-const REQUIRED_ENV = ['JWT_SECRET', 'ADMIN_USERNAME', 'ADMIN_PASSWORD_HASH'];
+const REQUIRED_ENV = ['JWT_SECRET', 'ADMIN_USERNAME', 'ADMIN_PASSWORD_HASH', 'MONGODB_URI']; // <-- Added MONGODB_URI here
 const missing = REQUIRED_ENV.filter((key) => !process.env[key]);
 if (missing.length) {
   console.error(`\nMissing required environment variables: ${missing.join(', ')}`);
@@ -50,7 +51,17 @@ app.use((err, req, res, next) => {
 });
 
 const PORT = process.env.PORT || 4000;
-app.listen(PORT, () => {
-  console.log(`Darshit Playz portfolio running at http://localhost:${PORT}`);
-  console.log(`Admin dashboard at http://localhost:${PORT}/admin`);
-});
+
+// Connect to MongoDB Atlas and then start the server
+mongoose.connect(process.env.MONGODB_URI)
+  .then(() => {
+    console.log('Connected to MongoDB Atlas successfully.');
+    app.listen(PORT, () => {
+      console.log(`Darshit Playz portfolio running at http://localhost:${PORT}`);
+      console.log(`Admin dashboard at http://localhost:${PORT}/admin`);
+    });
+  })
+  .catch((err) => {
+    console.error('Failed to connect to MongoDB:', err);
+    process.exit(1);
+  });
