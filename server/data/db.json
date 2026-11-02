@@ -1,0 +1,174 @@
+{
+  "settings": {
+    "name": "DARSHIT PLAYZ",
+    "tagline": "Video Editor & Content Creator",
+    "intro": "Creative video editor specializing in gaming edits, short-form content, cinematic edits, and engaging social media videos.",
+    "aboutText": "I'm Darshit, a video editor who turns raw gameplay and footage into content people actually want to watch. My work sits at the intersection of pacing, sound design, and motion — fast-cut gaming highlights, scroll-stopping shorts, and cinematic edits that feel intentional from the first frame. I work with streamers, gaming creators, and small brands who want their footage to feel bigger than it is, and I care about hitting deadlines as much as hitting the beat.",
+    "yearsExperience": "2+ Years Editing",
+    "profilePhoto": "https://placehold.co/480x480/14161c/ff5c39?text=DP&font=montserrat",
+    "gmail": "darshitmakvana61@gmail.com",
+    "instagram": "https://www.instagram.com/not.darshit?igsi=MThnbWl0ZjNkcXRsOA==",
+    "discord": "darshit18.",
+    "accentColor": "#ff5c39",
+    "skills": [
+      "Premiere Pro",
+      "After Effects",
+      "DaVinci Resolve",
+      "Color Grading",
+      "Motion Graphics"
+    ]
+  },
+  "categories": [
+    {
+      "slug": "gaming-edits",
+      "name": "Gaming Edits"
+    },
+    {
+      "slug": "shorts-reels",
+      "name": "Shorts / Reels"
+    },
+    {
+      "slug": "cinematic-edits",
+      "name": "Cinematic Edits"
+    },
+    {
+      "slug": "motion-graphics",
+      "name": "Motion Graphics"
+    },
+    {
+      "slug": "youtube-videos",
+      "name": "YouTube Videos"
+    },
+    {
+      "slug": "montage",
+      "name": "Montage"
+    },
+    {
+      "slug": "other-projects",
+      "name": "Other Projects"
+    }
+  ],
+  "projects": [
+    {
+      "id": "proj_001",
+      "title": "Clutch Ranked Highlights — Ep. 4",
+      "category": "gaming-edits",
+      "description": "Fast-paced highlight reel cut to match round-ending clutches, with impact sound design and quick zoom punches on every kill.",
+      "date": "2026-06-02",
+      "videoType": "youtube",
+      "videoId": "PASTE_YOUTUBE_ID_HERE",
+      "thumbnail": "https://placehold.co/640x360/14161c/ff5c39?text=Gaming+Edit",
+      "published": true,
+      "reactions": {
+        "fire": 25,
+        "good": 15,
+        "bad": 2
+      },
+      "reactedVisitors": {
+        "946c0446480e5947f8e515217ebd1baede7d29fa3c700f83cb8cbeed60daf504": "good"
+      }
+    },
+    {
+      "id": "proj_002",
+      "title": "3 Second Hook — Reel Cut",
+      "category": "shorts-reels",
+      "description": "Vertical short built around a three-second hook, jump cuts on beat, and bold captions for silent autoplay viewing.",
+      "date": "2026-05-20",
+      "videoType": "youtube",
+      "videoId": "PASTE_YOUTUBE_ID_HERE",
+      "thumbnail": "https://placehold.co/640x360/14161c/ff5c39?text=Shorts+%2F+Reels",
+      "published": true,
+      "reactions": {
+        "fire": 41,
+        "good": 9,
+        "bad": 0
+      },
+      "reactedVisitors": {}
+    },
+    {
+      "id": "proj_003",
+      "title": "Golden Hour — Cinematic Travel Cut",
+      "category": "cinematic-edits",
+      "description": "Slow, mood-driven edit with a warm grade and match cuts timed to an ambient score.",
+      "date": "2026-05-08",
+      "videoType": "youtube",
+      "videoId": "PASTE_YOUTUBE_ID_HERE",
+      "thumbnail": "https://placehold.co/640x360/14161c/ff5c39?text=Cinematic+Edit",
+      "published": true,
+      "reactions": {
+        "fire": 18,
+        "good": 11,
+        "bad": 1
+      },
+      "reactedVisitors": {}
+    },
+    {
+      "id": "proj_004",
+      "title": "Channel Intro — Logo Reveal",
+      "category": "motion-graphics",
+      "description": "5-second animated logo reveal with kinetic type, built for a gaming channel's intro bumper.",
+      "date": "2026-04-27",
+      "videoType": "youtube",
+      "videoId": "PASTE_YOUTUBE_ID_HERE",
+      "thumbnail": "https://placehold.co/640x360/14161c/ff5c39?text=Motion+Graphics",
+      "published": true,
+      "reactions": {
+        "fire": 12,
+        "good": 6,
+        "bad": 0
+      },
+      "reactedVisitors": {}
+    },
+    {
+      "id": "proj_005",
+      "title": "Full Episode Edit — Let's Play Ep. 12",
+      "category": "youtube-videos",
+      "description": "Long-form let's-play edit trimmed from 90 minutes to a tight 18, with chapter markers and pacing notes for the creator.",
+      "date": "2026-04-10",
+      "videoType": "youtube",
+      "videoId": "PASTE_YOUTUBE_ID_HERE",
+      "thumbnail": "https://placehold.co/640x360/14161c/ff5c39?text=YouTube+Video",
+      "published": true,
+      "reactions": {
+        "fire": 9,
+        "good": 7,
+        "bad": 0
+      },
+      "reactedVisitors": {}
+    },
+    {
+      "id": "proj_006",
+      "title": "Season Recap — Best Moments",
+      "category": "montage",
+      "description": "End-of-season montage stitched from a full year of clips, synced to a rising track for a highlight-reel finish.",
+      "date": "2026-03-30",
+      "videoType": "youtube",
+      "videoId": "PASTE_YOUTUBE_ID_HERE",
+      "thumbnail": "https://placehold.co/640x360/14161c/ff5c39?text=Montage",
+      "published": true,
+      "reactions": {
+        "fire": 30,
+        "good": 10,
+        "bad": 1
+      },
+      "reactedVisitors": {}
+    },
+    {
+      "id": "proj_008",
+      "title": "Unpublished Draft — Work In Progress",
+      "category": "gaming-edits",
+      "description": "Example of a draft that is saved but not visible to visitors until you hit Publish in the admin dashboard.",
+      "date": "2026-06-10",
+      "videoType": "youtube",
+      "videoId": "PASTE_YOUTUBE_ID_HERE",
+      "thumbnail": "https://placehold.co/640x360/14161c/2a2d34?text=Draft",
+      "published": false,
+      "reactions": {
+        "fire": 0,
+        "good": 0,
+        "bad": 0
+      },
+      "reactedVisitors": {}
+    }
+  ]
+}

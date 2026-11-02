@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Admin — Darshit Playz</title>
+<meta name="robots" content="noindex, nofollow" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/style.css" />
+<link rel="stylesheet" href="/css/admin.css" />
+</head>
+<body class="admin-body">
+
+<!-- ============ LOGIN SCREEN ============ -->
+<div class="login-screen" id="loginScreen">
+  <div class="login-card">
+    <span class="eyebrow">Admin</span>
+    <h1>Log in to manage your portfolio</h1>
+    <p class="sub">Only you should have this URL and password.</p>
+    <div class="form-error" id="loginError"></div>
+    <form id="loginForm">
+      <div class="field">
+        <label for="loginUsername">Username</label>
+        <input id="loginUsername" type="text" autocomplete="username" required />
+      </div>
+      <div class="field">
+        <label for="loginPassword">Password</label>
+        <input id="loginPassword" type="password" autocomplete="current-password" required />
+      </div>
+      <button class="btn btn-primary" type="submit" style="width:100%; justify-content:center;">Log In</button>
+    </form>
+  </div>
+</div>
+
+<!-- ============ DASHBOARD ============ -->
+<div id="dashboard" style="display:none;">
+  <header class="admin-header">
+    <a href="/" class="brand"><span class="brand-dot"></span>Darshit Playz — Admin</a>
+    <div style="display:flex; gap:10px; align-items:center;">
+      <a href="/" class="btn btn-ghost" target="_blank">View Site</a>
+      <button class="btn btn-ghost" id="logoutBtn">Log Out</button>
+    </div>
+  </header>
+
+  <div class="admin-wrap">
+    <div class="admin-tabs">
+      <button class="admin-tab active" data-tab="projects">Portfolio Projects</button>
+      <button class="admin-tab" data-tab="settings">Site Settings</button>
+    </div>
+
+    <!-- ---------- Projects tab ---------- -->
+    <div id="tab-projects">
+      <div class="panel">
+        <div class="panel-header">
+          <h2>All Edits</h2>
+          <button class="btn btn-primary" id="addProjectBtn">+ Add New Edit</button>
+        </div>
+        <div id="projectList"><p class="spinner-note">Loading…</p></div>
+      </div>
+    </div>
+
+    <!-- ---------- Settings tab ---------- -->
+    <div id="tab-settings" style="display:none;">
+      <div class="panel">
+        <div class="panel-header"><h2>Profile & About</h2></div>
+        <div class="form-success" id="settingsSuccess">Saved.</div>
+        <form id="settingsForm">
+          <div class="field-row">
+            <div class="field"><label>Display Name</label><input name="name" required /></div>
+            <div class="field"><label>Title / Tagline</label><input name="tagline" required /></div>
+          </div>
+          <div class="field"><label>Short Intro (hero section)</label><textarea name="intro" required></textarea></div>
+          <div class="field"><label>About Me</label><textarea name="aboutText" style="min-height:140px;" required></textarea></div>
+          <div class="field-row">
+            <div class="field"><label>Years / Experience Label</label><input name="yearsExperience" placeholder="e.g. 3+ Years Editing" /></div>
+            <div class="field"><label>Skills (comma separated)</label><input name="skills" placeholder="Premiere Pro, After Effects, ..." /></div>
+          </div>
+
+          <div class="field">
+            <label>Profile Photo</label>
+            <div class="upload-row">
+              <img id="photoPreview" class="thumb-preview" style="width:60px;height:60px;border-radius:50%;" />
+              <input type="file" id="photoFile" accept="image/*" />
+              <input type="hidden" name="profilePhoto" id="profilePhotoUrl" />
+            </div>
+            <div class="field-hint">Or paste an image URL below.</div>
+            <input id="profilePhotoManual" placeholder="https://…" style="margin-top:8px;" />
+          </div>
+
+          <div class="field-row">
+            <div class="field"><label>Gmail</label><input name="gmail" type="email" required /></div>
+            <div class="field"><label>Instagram URL</label><input name="instagram" required /></div>
+          </div>
+          <div class="field-row">
+            <div class="field"><label>Discord Invite URL</label><input name="discord" required /></div>
+            <div class="field">
+              <label>Accent Color</label>
+              <div class="color-row">
+                <input type="color" name="accentColorPicker" id="accentColorPicker" />
+                <input type="text" name="accentColor" id="accentColorText" placeholder="#ff5c39" />
+              </div>
+            </div>
+          </div>
+
+          <button class="btn btn-primary" type="submit">Save Settings</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ ADD / EDIT PROJECT MODAL ============ -->
+<div class="admin-modal-overlay" id="projectModalOverlay">
+  <div class="admin-modal">
+    <h2 id="projectModalTitle">Add New Edit</h2>
+    <div class="form-error" id="projectFormError"></div>
+    <form id="projectForm">
+      <input type="hidden" id="projectId" />
+      <div class="field"><label>Title</label><input id="pf-title" required /></div>
+      <div class="field-row">
+        <div class="field">
+          <label>Category</label>
+          <select id="pf-category" required></select>
+        </div>
+        <div class="field"><label>Date</label><input id="pf-date" type="date" required /></div>
+      </div>
+      <div class="field"><label>Description</label><textarea id="pf-description"></textarea></div>
+
+      <div class="field">
+        <label>Video Source</label>
+        <select id="pf-videoType">
+          <option value="youtube">YouTube link / ID</option>
+          <option value="vimeo">Vimeo link / ID</option>
+          <option value="file">Upload a video file</option>
+          <option value="url">Direct video URL (.mp4)</option>
+        </select>
+      </div>
+      <div class="field" id="pf-videoIdWrap">
+        <label id="pf-videoIdLabel">YouTube video ID or URL</label>
+        <input id="pf-videoId" placeholder="e.g. https://youtube.com/watch?v=… or just the ID" />
+        <p class="field-hint">Paste the full link — the ID is pulled out automatically.</p>
+      </div>
+      <div class="field" id="pf-videoFileWrap" style="display:none;">
+        <label>Video File</label>
+        <div class="upload-row">
+          <input type="file" id="pf-videoFile" accept="video/mp4,video/webm,video/quicktime" />
+        </div>
+        <p class="field-hint" id="pf-videoFileStatus">MP4, WebM, or MOV — up to 500MB.</p>
+      </div>
+      <div class="field" id="pf-videoUrlWrap" style="display:none;">
+        <label>Direct Video URL</label>
+        <input id="pf-videoUrl" placeholder="https://example.com/video.mp4" />
+      </div>
+
+      <div class="field">
+        <label>Thumbnail</label>
+        <div class="upload-row">
+          <img id="pf-thumbPreview" class="thumb-preview" />
+          <input type="file" id="pf-thumbFile" accept="image/jpeg,image/png,image/webp" />
+        </div>
+        <p class="field-hint">Or paste an image URL:</p>
+        <input id="pf-thumbUrl" placeholder="https://…" />
+      </div>
+
+      <div class="field" style="display:flex; align-items:center; gap:10px;">
+        <input type="checkbox" id="pf-published" style="width:auto;" />
+        <label for="pf-published" style="margin:0;">Published (visible to visitors)</label>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn btn-ghost" id="projectCancelBtn">Cancel</button>
+        <button type="submit" class="btn btn-primary" id="projectSaveBtn">Save Edit</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="/js/admin.js"></script>
+</body>
+</html>

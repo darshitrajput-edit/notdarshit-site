@@ -1,0 +1,121 @@
+body.admin-body { background: var(--bg); }
+
+.admin-header {
+  position: sticky; top: 0; z-index: 50;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 28px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(10,11,14,0.9);
+  backdrop-filter: blur(8px);
+}
+.admin-header .brand { font-family: var(--font-display); font-weight: 700; font-size: 17px; display:flex; align-items:center; gap:10px; text-decoration:none; }
+
+.admin-wrap { max-width: 1080px; margin: 0 auto; padding: 32px 28px 100px; }
+
+.admin-tabs { display: flex; gap: 8px; margin-bottom: 28px; }
+.admin-tab {
+  background: var(--surface); border: 1px solid var(--border); color: var(--text-muted);
+  padding: 9px 18px; border-radius: 999px; font-size: 13.5px; font-weight: 500;
+}
+.admin-tab.active { background: var(--accent); color: var(--accent-text); border-color: var(--accent); }
+
+/* ---------- Login screen ---------- */
+.login-screen {
+  min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px;
+}
+.login-card {
+  width: 100%; max-width: 380px;
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 32px 28px; box-shadow: var(--shadow);
+}
+.login-card h1 { font-family: var(--font-display); font-size: 22px; margin: 14px 0 6px; }
+.login-card p.sub { color: var(--text-muted); font-size: 13.5px; margin: 0 0 24px; }
+
+.field { margin-bottom: 16px; }
+.field label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; color: var(--text-muted); }
+.field input, .field select, .field textarea {
+  width: 100%; background: var(--surface-2); border: 1px solid var(--border); color: var(--text);
+  padding: 10px 12px; border-radius: var(--radius-sm); font-family: var(--font-body); font-size: 14px;
+}
+.field input:focus, .field select:focus, .field textarea:focus { border-color: var(--accent); }
+.field textarea { resize: vertical; min-height: 90px; }
+.field-hint { font-size: 12px; color: var(--text-muted); margin-top: 5px; }
+.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+.form-error {
+  background: rgba(255, 77, 94, 0.12); border: 1px solid var(--danger); color: #ffb3ba;
+  padding: 10px 14px; border-radius: var(--radius-sm); font-size: 13px; margin-bottom: 16px; display:none;
+}
+.form-error.show { display: block; }
+
+.form-success {
+  background: rgba(255, 92, 57, 0.12); border: 1px solid var(--accent); color: var(--text);
+  padding: 10px 14px; border-radius: var(--radius-sm); font-size: 13px; margin-bottom: 16px; display:none;
+}
+.form-success.show { display: block; }
+
+/* ---------- Toolbar / panel ---------- */
+.panel {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 24px; margin-bottom: 24px;
+}
+.panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; gap: 12px; flex-wrap: wrap; }
+.panel-header h2 { font-family: var(--font-display); font-size: 18px; margin: 0; }
+
+/* ---------- Project table ---------- */
+.project-row {
+  display: grid;
+  grid-template-columns: 64px 1.6fr 1fr 0.8fr 1fr auto;
+  gap: 14px;
+  align-items: center;
+  padding: 12px 10px;
+  border-bottom: 1px solid var(--border);
+}
+.project-row:last-child { border-bottom: none; }
+.project-row img { width: 64px; height: 36px; object-fit: cover; border-radius: 6px; border: 1px solid var(--border); }
+.project-row .p-title { font-weight: 600; font-size: 14px; }
+.project-row .p-cat { font-family: var(--font-mono); font-size: 11px; color: var(--accent); }
+.project-row .p-date { font-family: var(--font-mono); font-size: 11.5px; color: var(--text-muted); }
+.project-row .p-reactions { font-family: var(--font-mono); font-size: 11.5px; color: var(--text-muted); }
+.row-actions { display: flex; gap: 6px; }
+
+.badge { font-size: 10.5px; font-weight: 700; letter-spacing: 0.04em; padding: 3px 8px; border-radius: 999px; text-transform: uppercase; }
+.badge.live { background: rgba(58, 214, 130, 0.15); color: #3ad682; }
+.badge.draft { background: rgba(255,255,255,0.08); color: var(--text-muted); }
+
+.icon-btn {
+  width: 32px; height: 32px; border-radius: 8px;
+  background: var(--surface-2); border: 1px solid var(--border); color: var(--text);
+  display: flex; align-items: center; justify-content: center;
+}
+.icon-btn:hover { border-color: var(--accent); color: var(--accent); }
+.icon-btn.danger:hover { border-color: var(--danger); color: var(--danger); }
+
+/* ---------- Modal (add/edit project) ---------- */
+.admin-modal-overlay {
+  position: fixed; inset: 0; background: rgba(6,7,9,0.82); z-index: 200;
+  display: flex; align-items: flex-start; justify-content: center; padding: 40px 20px;
+  opacity: 0; pointer-events: none; transition: opacity 0.2s ease; overflow-y: auto;
+}
+.admin-modal-overlay.open { opacity: 1; pointer-events: auto; }
+.admin-modal {
+  width: 100%; max-width: 640px; background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 28px; margin-bottom: 40px;
+}
+.admin-modal h2 { font-family: var(--font-display); font-size: 19px; margin: 0 0 20px; }
+.modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
+
+.upload-row { display: flex; align-items: center; gap: 10px; }
+.upload-row input[type="file"] { flex: 1; font-size: 12.5px; }
+.thumb-preview { width: 80px; height: 45px; object-fit: cover; border-radius: 6px; border: 1px solid var(--border); background: var(--surface-2); }
+
+.color-row { display: flex; align-items: center; gap: 10px; }
+.color-row input[type="color"] { width: 44px; height: 38px; padding: 2px; background: var(--surface-2); border: 1px solid var(--border); border-radius: 8px; }
+
+.spinner-note { font-size: 12.5px; color: var(--text-muted); font-family: var(--font-mono); }
+
+@media (max-width: 720px) {
+  .project-row { grid-template-columns: 48px 1fr; grid-template-areas: "thumb title" "thumb meta" "actions actions"; row-gap: 6px; }
+  .project-row img { grid-area: thumb; }
+  .field-row { grid-template-columns: 1fr; }
+}
