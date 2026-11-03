@@ -1,67 +1,67 @@
 const express = require('express');
 const crypto = require('crypto');
-const db = require('../db');
+const Project = require('../models/Project');
 const { requireAdmin } = require('../middleware/auth');
 
 const router = express.Router();
-
 const REACTIONS = ['fire', 'good', 'bad'];
 
 function publicProject(p) {
-  // Never send the visitor map to the browser — it's only for server-side de-duping.
-  const { reactedVisitors, ...rest } = p;
-  return rest;
-}
-
-function nextId(projects) {
-  const nums = projects
-    .map((p) => parseInt(String(p.id).replace('proj_', ''), 10))
-    .filter((n) => !Number.isNaN(n));
-  const max = nums.length ? Math.max(...nums) : 0;
-  return `proj_${String(max + 1).padStart(3, '0')}`;
+  const obj = p.toObject ? p.toObject() : { ...p };
+  delete obj.reactedVisitors;
+  obj.id = obj._id.toString();
+  return obj;
 }
 
 // ---------- Public: list + filter ----------
-router.get('/', (req, res) => {
-  const data = db.read();
-  const { category } = req.query;
-  let projects = data.projects.filter((p) => p.published);
-  if (category) {
-    projects = projects.filter((p) => p.category === category);
+router.get('/', async (req, res) => {
+  try {
+    const { category } = req.query;
+    const query = { published: true };
+    if (category) query.category = category;
+    
+    const projects = await Project.find(query).sort({ date: -1 });
+    res.json(projects.map(publicProject));
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch projects.' });
   }
-  projects.sort((a, b) => new Date(b.date) - new Date(a.date));
-  res.json(projects.map(publicProject));
 });
 
-// ---------- Admin: list everything, including unpublished ----------
-router.get('/all', requireAdmin, (req, res) => {
-  const data = db.read();
-  const projects = [...data.projects].sort((a, b) => new Date(b.date) - new Date(a.date));
-  res.json(projects);
+// ---------- Admin: list everything ----------
+router.get('/all', requireAdmin, async (req, res) => {
+  try {
+    const projects = await Project.find().sort({ date: -1 });
+    res.json(projects.map(p => {
+      const obj = p.toObject();
+      obj.id = obj._id.toString();
+      return obj;
+    }));
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch all projects.' });
+  }
 });
 
 // ---------- Public: single project ----------
-router.get('/:id', (req, res) => {
-  const data = db.read();
-  const project = data.projects.find((p) => p.id === req.params.id && p.published);
-  if (!project) return res.status(404).json({ error: 'Project not found.' });
-  res.json(publicProject(project));
+router.get('/:id', async (req, res) => {
+  try {
+    const project = await Project.findOne({ _id: req.params.id, published: true });
+    if (!project) return res.status(404).json({ error: 'Project not found.' });
+    res.json(publicProject(project));
+  } catch (err) {
+    res.status(404).json({ error: 'Project not found.' });
+  }
 });
 
 // ---------- Admin: create ----------
 router.post('/', requireAdmin, async (req, res) => {
-  const { title, category, description, date, videoType, videoId, videoUrl, thumbnail, published } =
-    req.body || {};
+  try {
+    const { title, category, description, date, videoType, videoId, videoUrl, thumbnail, published } = req.body || {};
 
-  if (!title || !category || !(videoId || videoUrl) || !thumbnail) {
-    return res.status(400).json({
-      error: 'Title, category, thumbnail, and a video source are required.',
-    });
-  }
+    if (!title || !category || !(videoId || videoUrl) || !thumbnail) {
+      return res.status(400).json({ error: 'Title, category, thumbnail, and a video source are required.' });
+    }
 
-  const project = await db.update((data) => {
-    const newProject = {
-      id: nextId(data.projects),
+    const newProject = new Project({
       title,
       category,
       description: description || '',
@@ -72,74 +72,72 @@ router.post('/', requireAdmin, async (req, res) => {
       thumbnail,
       published: Boolean(published),
       reactions: { fire: 0, good: 0, bad: 0 },
-      reactedVisitors: {},
-    };
-    data.projects.push(newProject);
-    return newProject;
-  });
+      reactedVisitors: {}
+    });
 
-  res.status(201).json(project);
+    await newProject.save();
+    const result = newProject.toObject();
+    result.id = result._id.toString();
+    res.status(201).json(result);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to create project.' });
+  }
 });
 
 // ---------- Admin: update ----------
 router.put('/:id', requireAdmin, async (req, res) => {
-  const updates = req.body || {};
-  const allowed = [
-    'title',
-    'category',
-    'description',
-    'date',
-    'videoType',
-    'videoId',
-    'videoUrl',
-    'thumbnail',
-    'published',
-  ];
+  try {
+    const updates = req.body || {};
+    const allowed = ['title', 'category', 'description', 'date', 'videoType', 'videoId', 'videoUrl', 'thumbnail', 'published'];
+    
+    const project = await Project.findById(req.params.id);
+    if (!project) return res.status(404).json({ error: 'Project not found.' });
 
-  const updated = await db.update((data) => {
-    const project = data.projects.find((p) => p.id === req.params.id);
-    if (!project) return null;
     for (const key of allowed) {
       if (key in updates) project[key] = updates[key];
     }
-    return project;
-  });
 
-  if (!updated) return res.status(404).json({ error: 'Project not found.' });
-  res.json(updated);
+    await project.save();
+    const result = project.toObject();
+    result.id = result._id.toString();
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to update project.' });
+  }
 });
 
 // ---------- Admin: publish / unpublish toggle ----------
 router.patch('/:id/publish', requireAdmin, async (req, res) => {
-  const updated = await db.update((data) => {
-    const project = data.projects.find((p) => p.id === req.params.id);
-    if (!project) return null;
+  try {
+    const project = await Project.findById(req.params.id);
+    if (!project) return res.status(404).json({ error: 'Project not found.' });
+
     project.published = req.body && typeof req.body.published === 'boolean'
       ? req.body.published
       : !project.published;
-    return project;
-  });
 
-  if (!updated) return res.status(404).json({ error: 'Project not found.' });
-  res.json(updated);
+    await project.save();
+    const result = project.toObject();
+    result.id = result._id.toString();
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to toggle publish status.' });
+  }
 });
 
 // ---------- Admin: delete ----------
 router.delete('/:id', requireAdmin, async (req, res) => {
-  const result = await db.update((data) => {
-    const before = data.projects.length;
-    data.projects = data.projects.filter((p) => p.id !== req.params.id);
-    return data.projects.length < before;
-  });
-
-  if (!result) return res.status(404).json({ error: 'Project not found.' });
-  res.status(204).end();
+  try {
+    const deleted = await Project.findByIdAndDelete(req.params.id);
+    if (!deleted) return res.status(404).json({ error: 'Project not found.' });
+    res.status(204).end();
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to delete project.' });
+  }
 });
 
 // ---------- Public: react ----------
-// Light per-IP rate limit as a backstop against scripted spam,
-// on top of the one-reaction-per-visitor rule below.
-const reactAttempts = new Map(); // ip -> { count, windowStart }
+const reactAttempts = new Map();
 const REACT_WINDOW_MS = 60 * 1000;
 const REACT_MAX_PER_WINDOW = 20;
 
@@ -154,47 +152,46 @@ function isRateLimited(ip) {
 }
 
 router.post('/:id/react', async (req, res) => {
-  const { reaction, visitorId } = req.body || {};
+  try {
+    const { reaction, visitorId } = req.body || {};
 
-  if (!REACTIONS.includes(reaction)) {
-    return res.status(400).json({ error: 'Reaction must be fire, good, or bad.' });
-  }
-  if (!visitorId || typeof visitorId !== 'string' || visitorId.length > 100) {
-    return res.status(400).json({ error: 'Missing visitor id.' });
-  }
-  if (isRateLimited(req.ip)) {
-    return res.status(429).json({ error: 'Slow down — too many reactions from this connection.' });
-  }
+    if (!REACTIONS.includes(reaction)) {
+      return res.status(400).json({ error: 'Reaction must be fire, good, or bad.' });
+    }
+    if (!visitorId || typeof visitorId !== 'string' || visitorId.length > 100) {
+      return res.status(400).json({ error: 'Missing visitor id.' });
+    }
+    if (isRateLimited(req.ip)) {
+      return res.status(429).json({ error: 'Slow down — too many reactions from this connection.' });
+    }
 
-  // Visitor ids are hashed before storage so the raw id never sits in the database file.
-  const visitorHash = crypto.createHash('sha256').update(visitorId).digest('hex');
+    const visitorHash = crypto.createHash('sha256').update(visitorId).digest('hex');
+    const project = await Project.findOne({ _id: req.params.id, published: true });
+    
+    if (!project) return res.status(404).json({ error: 'Project not found.' });
 
-  const result = await db.update((data) => {
-    const project = data.projects.find((p) => p.id === req.params.id && p.published);
-    if (!project) return null;
-
-    const previous = project.reactedVisitors[visitorHash];
+    const previous = project.reactedVisitors.get(visitorHash);
 
     if (previous === reaction) {
-      // Clicking the same reaction again removes it.
       project.reactions[reaction] = Math.max(0, project.reactions[reaction] - 1);
-      delete project.reactedVisitors[visitorHash];
+      project.reactedVisitors.delete(visitorHash);
     } else {
       if (previous) {
         project.reactions[previous] = Math.max(0, project.reactions[previous] - 1);
       }
-      project.reactions[reaction] += 1;
-      project.reactedVisitors[visitorHash] = reaction;
+      project.reactions[reaction] = (project.reactions[reaction] || 0) + 1;
+      project.reactedVisitors.set(visitorHash, reaction);
     }
 
-    return {
-      reactions: project.reactions,
-      yourReaction: project.reactedVisitors[visitorHash] || null,
-    };
-  });
+    await project.save();
 
-  if (!result) return res.status(404).json({ error: 'Project not found.' });
-  res.json(result);
+    res.json({
+      reactions: project.reactions,
+      yourReaction: project.reactedVisitors.get(visitorHash) || null,
+    });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to record reaction.' });
+  }
 });
 
 module.exports = router;
