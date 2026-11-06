@@ -104,7 +104,22 @@
             </div>
           </div>
 
-          <button class="btn btn-primary" type="submit">Save Settings</button>
+          <!-- ============ CATEGORIES MANAGEMENT SECTION ============ -->
+          <div class="admin-section" style="margin-top: 30px; border-top: 1px solid #333; padding-top: 20px;">
+            <h3>Manage Categories</h3>
+            <p style="color: #888; font-size: 14px; margin-bottom: 15px;">Add or remove portfolio categories. These will appear in project dropdowns automatically.</p>
+            
+            <div id="categories-list" style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 15px;">
+              <!-- Dynamic category tags will appear here -->
+            </div>
+
+            <div style="display: flex; gap: 10px;">
+              <input type="text" id="new-category-input" placeholder="New category name..." style="flex: 1; padding: 10px; background: #0a0b0e; border: 1px solid #333; color: #fff; border-radius: 4px;">
+              <button type="button" id="add-category-btn" class="btn btn-primary" style="padding: 10px 20px;">Add Category</button>
+            </div>
+          </div>
+
+          <button class="btn btn-primary" type="submit" style="margin-top: 20px;">Save Settings</button>
         </form>
       </div>
     </div>
