@@ -87,11 +87,15 @@
 
   // ---------- Load categories + settings ----------
   async function loadSettings() {
-    const { settings, categories: cats } = await (await fetch(`${API}/settings`)).json();
-    categories = cats;
+    const res = await fetch(`${API}/settings`);
+    const data = await res.json();
+    const settings = data.settings || {};
+    
+    // Support both string array or object array formats for categories
+    categories = (data.categories || []).map(c => typeof c === 'string' ? { slug: c.toLowerCase().replace(/[^a-z0-9]+/g, '-'), name: c } : c);
 
-    const catSelect = $('#pf-category');
-    catSelect.innerHTML = categories.map((c) => `<option value="${c.slug}">${c.name}</option>`).join('');
+    updateCategoryDropdown();
+    renderCategoriesUI();
 
     const form = $('#settingsForm');
     form.name.value = settings.name || '';
@@ -109,6 +113,79 @@
     $('#profilePhotoManual').value = settings.profilePhoto || '';
     $('#photoPreview').src = settings.profilePhoto || '';
     document.documentElement.style.setProperty('--accent', settings.accentColor || '#ff5c39');
+  }
+
+  function updateCategoryDropdown() {
+    const catSelect = $('#pf-category');
+    if (!catSelect) return;
+    catSelect.innerHTML = categories.map((c) => `<option value="${c.slug}">${c.name}</option>`).join('');
+  }
+
+  function renderCategoriesUI() {
+    const container = $('#categories-list');
+    if (!container) return;
+    
+    container.innerHTML = categories.map((c, index) => `
+      <div style="display: flex; align-items: center; background: #1a1d24; padding: 6px 12px; border-radius: 4px; border: 1px solid #333; gap: 8px; color: #fff;">
+        <span>${escapeHtml(c.name)}</span>
+        <button type="button" class="remove-cat-btn" data-index="${index}" style="background: none; border: none; color: #ff5c39; cursor: pointer; font-weight: bold; font-size: 16px;">×</button>
+      </div>
+    `).join('');
+
+    container.querySelectorAll('.remove-cat-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const idx = parseInt(btn.dataset.index, 10);
+        categories.splice(idx, 1);
+        renderCategoriesUI();
+        updateCategoryDropdown();
+        saveCategoriesToServer();
+      });
+    });
+  }
+
+  $('#add-category-btn')?.addEventListener('click', () => {
+    const input = $('#new-category-input');
+    const val = input.value.trim();
+    if (!val) return;
+    const slug = val.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+    if (!categories.some(c => c.slug === slug || c.name.toLowerCase() === val.toLowerCase())) {
+      categories.push({ slug, name: val });
+      input.value = '';
+      renderCategoriesUI();
+      updateCategoryDropdown();
+      saveCategoriesToServer();
+      showToast('Category added.');
+    } else {
+      showToast('Category already exists.');
+    }
+  });
+
+  async function saveCategoriesToServer() {
+    try {
+      const form = $('#settingsForm');
+      const payload = {
+        name: form.name.value.trim(),
+        tagline: form.tagline.value.trim(),
+        intro: form.intro.value.trim(),
+        aboutText: form.aboutText.value.trim(),
+        yearsExperience: form.yearsExperience.value.trim(),
+        skills: form.skills.value.split(',').map((s) => s.trim()).filter(Boolean),
+        gmail: form.gmail.value.trim(),
+        instagram: form.instagram.value.trim(),
+        discord: form.discord.value.trim(),
+        accentColor: $('#accentColorText').value.trim(),
+        profilePhoto: $('#profilePhotoUrl').value.trim(),
+        categories: categories.map(c => c.name) // Save as name strings or objects based on schema backend
+      };
+
+      await authJSON(`${API}/settings`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+    } catch (err) {
+      showToast('Failed to save categories: ' + err.message);
+    }
   }
 
   $('#accentColorPicker').addEventListener('input', (e) => {
@@ -149,6 +226,7 @@
       discord: form.discord.value.trim(),
       accentColor: $('#accentColorText').value.trim(),
       profilePhoto: $('#profilePhotoUrl').value.trim(),
+      categories: categories.map(c => c.name)
     };
     try {
       await authJSON(`${API}/settings`, {
@@ -160,6 +238,7 @@
       const success = $('#settingsSuccess');
       success.classList.add('show');
       setTimeout(() => success.classList.remove('show'), 2500);
+      showToast('Settings saved successfully!');
     } catch (err) {
       showToast(err.message);
     }
@@ -265,6 +344,7 @@
     pendingVideoFileUrl = '';
     $('#projectFormError').classList.remove('show');
     projectForm.reset();
+    updateCategoryDropdown(); // Ensure dropdown is up to date
     $('#pf-thumbPreview').src = '';
     $('#pf-videoFileStatus').textContent = 'MP4, WebM, or MOV — up to 500MB.';
 
@@ -312,7 +392,6 @@
   }
   $('#pf-videoType').addEventListener('change', updateVideoFieldVisibility);
 
-  // Extract a bare ID whether the admin pastes a full URL or just the ID
   function extractYouTubeId(input) {
     const trimmed = input.trim();
     const patterns = [
@@ -322,7 +401,7 @@
       const m = trimmed.match(re);
       if (m) return m[1];
     }
-    return trimmed; // assume it's already a bare ID
+    return trimmed;
   }
   function extractVimeoId(input) {
     const trimmed = input.trim();
