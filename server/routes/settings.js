@@ -1,63 +1,60 @@
 const express = require('express');
-const Setting = require('../models/Setting');
-const { requireAdmin } = require('../middleware/auth');
-
 const router = express.Router();
+const Setting = require('../models/Setting');
+const verifyToken = require('../middleware/auth'); // Aapke auth middleware ka path
 
-async function getSettingsDoc() {
-  let doc = await Setting.findOne();
-  if (!doc) {
-    doc = await Setting.create({
-      settings: {},
-      categories: ['Gaming Edits', 'Shorts / Reels', 'Cinematic Edits', 'Motion Graphics', 'YouTube Videos', 'Montage', 'Other Projects']
-    });
-  }
-  return doc;
-}
-
+// GET settings & categories
 router.get('/', async (req, res) => {
   try {
-    const doc = await getSettingsDoc();
-    res.json({ settings: doc.settings, categories: doc.categories });
+    let settingDoc = await Setting.findOne();
+    if (!settingDoc) {
+      settingDoc = await Setting.create({});
+    }
+    res.json({ 
+      settings: settingDoc.settings || {}, 
+      categories: settingDoc.categories || [] 
+    });
   } catch (err) {
-    res.status(500).json({ error: 'Failed to fetch settings.' });
+    res.status(500).json({ error: err.message });
   }
 });
 
-router.put('/', requireAdmin, async (req, res) => {
+// PUT update settings & categories
+router.put('/', verifyToken, async (req, res) => {
   try {
-    const allowed = [
-      'name',
-      'tagline',
-      'intro',
-      'aboutText',
-      'yearsExperience',
-      'profilePhoto',
-      'gmail',
-      'instagram',
-      'discord',
-      'accentColor',
-      'skills',
-    ];
-
-    const doc = await getSettingsDoc();
-
-    for (const key of allowed) {
-      if (key in req.body) {
-        doc.settings[key] = req.body[key];
-      }
+    let settingDoc = await Setting.findOne();
+    if (!settingDoc) {
+      settingDoc = new Setting();
     }
 
+    // Settings fields update karo
+    settingDoc.settings = {
+      name: req.body.name,
+      tagline: req.body.tagline,
+      intro: req.body.intro,
+      aboutText: req.body.aboutText,
+      yearsExperience: req.body.yearsExperience,
+      skills: req.body.skills,
+      profilePhoto: req.body.profilePhoto,
+      gmail: req.body.gmail,
+      instagram: req.body.instagram,
+      discord: req.body.discord,
+      accentColor: req.body.accentColor
+    };
+
+    // Categories update karo agar bheji gayi hain
     if (req.body.categories) {
-      doc.categories = req.body.categories;
+      settingDoc.categories = req.body.categories;
     }
 
-    doc.markModified('settings');
-    await doc.save();
-
-    res.json(doc.settings);
+    await settingDoc.save();
+    res.json({ 
+      success: true, 
+      settings: settingDoc.settings, 
+      categories: settingDoc.categories 
+    });
   } catch (err) {
-    res.status(500).json({ error: 'Failed to update settings.' });
+    res.status(500).json({ error: err.message });
   }
 });
 
