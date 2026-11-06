@@ -29,7 +29,7 @@
       const map = JSON.parse(localStorage.getItem('dp_reactions') || '{}');
       if (reaction) map[projectId] = reaction; else delete map[projectId];
       localStorage.setItem('dp_reactions', JSON.stringify(map));
-    } catch { /* ignore storage errors (private browsing etc.) */ }
+    } catch { /* ignore storage errors */ }
   }
 
   // ---------- Toast ----------
@@ -138,7 +138,6 @@
       if (project) project.reactions = result.reactions;
       setLocalReaction(projectId, result.yourReaction);
 
-      // Update every instance of this reaction group on the page (card + modal)
       document.querySelectorAll(`[data-project="${projectId}"]`).forEach((el) => {
         const key = el.dataset.reaction;
         el.querySelector('.count').textContent = result.reactions[key];
@@ -156,7 +155,7 @@
 
   // ---------- Portfolio grid ----------
   function cardMarkup(project) {
-    const category = state.categories.find((c) => c.slug === project.category);
+    const category = state.categories.find((c) => c.slug === project.category || c.name.toLowerCase() === project.category.toLowerCase());
     return `
       <article class="card" data-id="${project.id}">
         <button class="card-thumb" data-open="${project.id}" aria-label="Watch ${escapeHtml(project.title)}">
@@ -184,7 +183,11 @@
   function renderGrid() {
     const grid = document.getElementById('projectGrid');
     const empty = document.getElementById('emptyState');
-    const list = state.projects.filter((p) => state.activeCategory === 'all' || p.category === state.activeCategory);
+    const list = state.projects.filter((p) => {
+      if (state.activeCategory === 'all') return true;
+      const catObj = state.categories.find((c) => c.slug === state.activeCategory);
+      return p.category === state.activeCategory || (catObj && p.category.toLowerCase() === catObj.name.toLowerCase());
+    });
 
     grid.innerHTML = list.map(cardMarkup).join('');
     empty.style.display = list.length ? 'none' : 'block';
@@ -211,7 +214,7 @@
   function openModal(projectId) {
     const project = state.projects.find((p) => p.id === projectId);
     if (!project) return;
-    const category = state.categories.find((c) => c.slug === project.category);
+    const category = state.categories.find((c) => c.slug === project.category || c.name.toLowerCase() === project.category.toLowerCase());
 
     document.getElementById('modalVideoWrap').innerHTML = videoEmbedMarkup(project);
     document.getElementById('modalCategory').textContent = category ? category.name : project.category;
@@ -226,7 +229,7 @@
 
   function closeModal() {
     document.getElementById('modalOverlay').classList.remove('open');
-    document.getElementById('modalVideoWrap').innerHTML = ''; // stop playback
+    document.getElementById('modalVideoWrap').innerHTML = '';
     document.body.style.overflow = '';
   }
 
@@ -251,7 +254,7 @@
   menuBackdrop.addEventListener('click', () => toggleMenu(false));
   mobileMenu.querySelectorAll('a').forEach((a) => a.addEventListener('click', () => toggleMenu(false)));
 
-  // ---------- Timeline scrubber (scroll progress + chapter nav) ----------
+  // ---------- Timeline scrubber ----------
   const scrubTicks = Array.from(document.querySelectorAll('.scrub-tick'));
   const playhead = document.getElementById('scrubPlayhead');
   const sectionIds = scrubTicks.map((t) => t.dataset.target);
@@ -301,16 +304,21 @@
   // ---------- Boot ----------
   async function init() {
     try {
-      const [{ settings, categories }, projects] = await Promise.all([
+      const [{ settings, categories: rawCategories }, projects] = await Promise.all([
         getJSON(`${API}/settings`),
         getJSON(`${API}/projects`),
       ]);
+      
       state.settings = settings;
-      state.categories = categories;
+      state.categories = (rawCategories || []).map(c => 
+        typeof c === 'string' 
+          ? { slug: c.toLowerCase().replace(/[^a-z0-9]+/g, '-'), name: c } 
+          : c
+      );
       state.projects = projects;
 
-      renderSettings(settings, categories);
-      renderTabs(categories);
+      renderSettings(settings, state.categories);
+      renderTabs(state.categories);
       renderGrid();
       document.getElementById('heroProjectCount').textContent = projects.length;
 
